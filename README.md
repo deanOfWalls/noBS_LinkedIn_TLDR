@@ -44,3 +44,7 @@ If you find any bugs or have suggestions for improvements, feel free to open an 
 ## License
 
 This project is licensed under the MIT License.
+
+## Note
+
+This project has been discontinued until I can find a suitable replacement LLM API for ChatGPT.
