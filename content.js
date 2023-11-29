@@ -1,7 +1,12 @@
+// Function to display a popup message
+function displayPopupMessage(message) {
+  alert(message);
+}
+
 // Function to call ChatGPT API
 async function callChatGPT(originalText) {
   const apiEndpoint = "https://api.openai.com/v1/chat/completions";
-  const apiKey = "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"; // Replace with your actual API key
+  const apiKey = "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"; // Replace with your actual API key
 
   const payload = {
     model: "gpt-3.5-turbo", // Replace with the model you're using
@@ -42,10 +47,25 @@ async function callChatGPT(originalText) {
 // Function to update job listing text
 async function updateJobListingText() {
   try {
+    // Wait for the LinkedIn job search page to fully load
     const isLinkedInJobSearchPage = /^https:\/\/www\.linkedin\.com\/jobs\/search\//.test(window.location.href);
-    const jobDetailsElement = document.querySelector('#job-details > span');
+    if (!isLinkedInJobSearchPage) {
+      return; // Exit if not on the LinkedIn job search page
+    }
 
-    if (isLinkedInJobSearchPage && jobDetailsElement) {
+    // Wait for the #ember277 > h2 element to be present
+    const headerElement = await waitForElement('#ember277 > h2', 5000); // Adjust the timeout as needed
+
+    if (!headerElement) {
+      // Display a warning message if the header element is not found
+      displayPopupMessage("Warning: Header element not found.");
+      return; // Exit if the header element is not found
+    }
+
+    // Wait for the job details element to be present
+    const jobDetailsElement = await waitForElement('#job-details > span', 5000); // Adjust the timeout as needed
+
+    if (jobDetailsElement) {
       // Grab the text from the job details element
       const originalText = jobDetailsElement.textContent;
 
@@ -54,10 +74,36 @@ async function updateJobListingText() {
 
       // Replace the text in the job details element with the summarized text
       jobDetailsElement.textContent = simplifiedText;
+
+      // Display a success popup message
+      displayPopupMessage("Job listing text updated successfully.");
+    } else {
+      // Display a message if the job details element is not found
+      displayPopupMessage("Job details element not found.");
     }
   } catch (error) {
     console.error("Error:", error);
+    // Display an error popup message
+    displayPopupMessage("An error occurred: " + error.message);
   }
+}
+
+// Function to wait for an element to be present
+function waitForElement(selector, timeout) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    const checkElement = () => {
+      const element = document.querySelector(selector);
+      if (element) {
+        resolve(element);
+      } else if (Date.now() - startTime >= timeout) {
+        reject(new Error(`Element with selector ${selector} not found within ${timeout}ms`));
+      } else {
+        setTimeout(checkElement, 100);
+      }
+    };
+    checkElement();
+  });
 }
 
 // Run the main function when the page is fully loaded
