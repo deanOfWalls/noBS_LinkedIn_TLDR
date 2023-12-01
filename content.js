@@ -1,3 +1,5 @@
+// content.js
+
 // Function to display a popup message
 function displayPopupMessage(message) {
   alert(message);
@@ -6,7 +8,7 @@ function displayPopupMessage(message) {
 // Function to call ChatGPT API
 async function callChatGPT(originalText) {
   const apiEndpoint = "https://api.openai.com/v1/chat/completions";
-  const apiKey = "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"; // Replace with your actual API key
+  const apiKey = "sk-key goes here"; // Replace with your actual API key
 
   const payload = {
     model: "gpt-3.5-turbo", // Replace with the model you're using
@@ -44,17 +46,16 @@ async function callChatGPT(originalText) {
   return data.choices[0].message.content.trim();
 }
 
-// Function to wait for an element with specific text to be present
-function waitForElementWithText(tagName, text, timeout) {
+// Function to wait for an element with a specific selector
+async function waitForElementWithSelector(selector, timeout) {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     const checkElement = () => {
-      const elements = document.querySelectorAll(tagName);
-      const element = Array.from(elements).find(el => el.textContent.includes(text));
+      const element = document.querySelector(selector);
       if (element) {
         resolve(element);
       } else if (Date.now() - startTime >= timeout) {
-        reject(new Error(`Element with ${tagName} containing text "${text}" not found within ${timeout}ms`));
+        reject(new Error(`Element with selector "${selector}" not found within ${timeout}ms`));
       } else {
         setTimeout(checkElement, 100);
       }
@@ -73,7 +74,7 @@ async function updateJobListingText() {
     }
 
     // Wait for the h2 element containing "About the job" to be present
-    const headerElement = await waitForElementWithText('h2', 'About the job', 5000);
+    const headerElement = await waitForElementWithSelector('h2', 5000);
 
     if (!headerElement) {
       // Display a warning message if the header element is not found
@@ -81,9 +82,8 @@ async function updateJobListingText() {
       return; // Exit if the header element is not found
     }
 
-    // Wait for the job details element to be present
-    // Update this line to use waitForElementWithText or another appropriate method
-    const jobDetailsElement = await waitForElementWithText('#job-details > span', 'About the job', 5000); // Adjust the timeout and text as needed
+    // Wait for the job details element to be present (modify the selector as needed)
+    const jobDetailsElement = await waitForElementWithSelector('#job-details > span', 5000);
 
     if (jobDetailsElement) {
       // Grab the text from the job details element
@@ -108,6 +108,5 @@ async function updateJobListingText() {
   }
 }
 
-
 // Run the main function when the page is fully loaded
-window.addEventListener('load', updateJobListingText);
+updateJobListingText();
