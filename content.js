@@ -44,6 +44,25 @@ async function callChatGPT(originalText) {
   return data.choices[0].message.content.trim();
 }
 
+// Function to wait for an element with specific text to be present
+function waitForElementWithText(tagName, text, timeout) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    const checkElement = () => {
+      const elements = document.querySelectorAll(tagName);
+      const element = Array.from(elements).find(el => el.textContent.includes(text));
+      if (element) {
+        resolve(element);
+      } else if (Date.now() - startTime >= timeout) {
+        reject(new Error(`Element with ${tagName} containing text "${text}" not found within ${timeout}ms`));
+      } else {
+        setTimeout(checkElement, 100);
+      }
+    };
+    checkElement();
+  });
+}
+
 // Function to update job listing text
 async function updateJobListingText() {
   try {
@@ -53,8 +72,8 @@ async function updateJobListingText() {
       return; // Exit if not on the LinkedIn job search page
     }
 
-    // Wait for the #ember277 > h2 element to be present
-    const headerElement = await waitForElement('#ember277 > h2', 5000); // Adjust the timeout as needed
+    // Wait for the h2 element containing "About the job" to be present
+    const headerElement = await waitForElementWithText('h2', 'About the job', 5000);
 
     if (!headerElement) {
       // Display a warning message if the header element is not found
@@ -63,7 +82,8 @@ async function updateJobListingText() {
     }
 
     // Wait for the job details element to be present
-    const jobDetailsElement = await waitForElement('#job-details > span', 5000); // Adjust the timeout as needed
+    // Update this line to use waitForElementWithText or another appropriate method
+    const jobDetailsElement = await waitForElementWithText('#job-details > span', 'About the job', 5000); // Adjust the timeout and text as needed
 
     if (jobDetailsElement) {
       // Grab the text from the job details element
@@ -88,23 +108,6 @@ async function updateJobListingText() {
   }
 }
 
-// Function to wait for an element to be present
-function waitForElement(selector, timeout) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    const checkElement = () => {
-      const element = document.querySelector(selector);
-      if (element) {
-        resolve(element);
-      } else if (Date.now() - startTime >= timeout) {
-        reject(new Error(`Element with selector ${selector} not found within ${timeout}ms`));
-      } else {
-        setTimeout(checkElement, 100);
-      }
-    };
-    checkElement();
-  });
-}
 
 // Run the main function when the page is fully loaded
 window.addEventListener('load', updateJobListingText);
